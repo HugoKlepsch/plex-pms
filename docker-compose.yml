@@ -1,0 +1,18 @@
+version: '2'
+services:
+  plex:
+    container_name: plex
+    # image: plexinc/pms-docker
+    # Fix broken plex version
+    image: plexinc/pms-docker:1.30.2.6563-3d4dc0cce
+    restart: unless-stopped
+    environment:
+      - TZ=${TZONE}
+      - PLEX_CLAIM=${CLAIM}
+      - PLEX_UID=${UID}
+      - PLEX_GID=${GID}
+    network_mode: host
+    volumes:
+      - ${CONFIG_DIR}:/config
+      - ${TRANSCODE_DIR}:/transcode
+      - ${DATA_DIR}:/data

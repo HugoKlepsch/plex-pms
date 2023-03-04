@@ -1,0 +1,6 @@
+env.bash
+pms-docker/
+config/
+data/
+transcode/
+plex.service
