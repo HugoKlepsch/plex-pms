@@ -4,13 +4,20 @@ services:
     container_name: plex
     # image: plexinc/pms-docker
     # Fix broken plex version
-    image: plexinc/pms-docker:1.30.2.6563-3d4dc0cce
+    # image: plexinc/pms-docker:1.30.2.6563-3d4dc0cce
+    # Fix media playback error
+    #image: plexinc/pms-docker:1.32.0.6918-6f393eda1
+    # Update to newest
+    # image: plexinc/pms-docker:1.32.7.7621-871adbd44
+    # Update to newest
+    #docker pull plexinc/pms-docker:1.40.1.8227-c0dd5a73e
+    image: plexinc/pms-docker:1.40.1.8227-c0dd5a73e
     restart: unless-stopped
     environment:
       - TZ=${TZONE}
       - PLEX_CLAIM=${CLAIM}
-      - PLEX_UID=${UID}
-      - PLEX_GID=${GID}
+      - PLEX_UID=${PLEX_UID}
+      - PLEX_GID=${PLEX_GID}
     network_mode: host
     volumes:
       - ${CONFIG_DIR}:/config
