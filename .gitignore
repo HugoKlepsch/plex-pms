@@ -2,5 +2,7 @@ env.bash
 pms-docker/
 config/
 data/
+plex_data_mnt/
 transcode/
 plex.service
+bak/

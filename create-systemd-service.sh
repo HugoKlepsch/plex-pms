@@ -9,8 +9,8 @@ echo "Creating systemd service... /etc/systemd/system/${SERVICENAME}.service"
 cat >$SERVICENAME.service <<EOF
 [Unit]
 Description=$SERVICENAME
-After=home-user-plex-nas_data.service docker.service
-Requires=home-user-plex-nas_data.service docker.service
+After=home-user-plex-plex_data_mnt.mount docker.service
+Requires=home-user-plex-plex_data_mnt.mount docker.service
 
 [Service]
 RestartSec=10
