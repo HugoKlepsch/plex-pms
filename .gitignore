@@ -1,8 +1,6 @@
-env.bash
-pms-docker/
-config/
-data/
+.env
 plex_data_mnt/
-transcode/
-plex.service
-bak/
+*.service
+*.mount
+*.sw*
+local_data_mnt/
