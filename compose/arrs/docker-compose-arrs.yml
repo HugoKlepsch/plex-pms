@@ -32,6 +32,20 @@ services:
       - "9696:9696"
     restart: unless-stopped
 
+  # Overseerr - Request management
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:latest
+    container_name: overseerr
+    environment:
+      - PUID=${PLEX_UID}
+      - PGID=${PLEX_GID}
+      - TZ=${PLEX_TZONE}
+    volumes:
+      - ${OVERSEERR_CONFIG_DIR}:/config
+    ports:
+      - "5055:5055"
+    restart: unless-stopped
+
 networks:
   default:
     name: arr-stack
