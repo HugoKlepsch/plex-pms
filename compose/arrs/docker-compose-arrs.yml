@@ -10,9 +10,9 @@ services:
       - TORRENTING_PORT=6881
     volumes:
       - ${QBT_CONFIG_DIR}:/config
-      - ${QBT_DOWNLOAD_DIR}:/downloads
+      - ${ARR_TORRENT_DIR}:/data/torrents
     ports:
       - "3489:3489"             # Web UI
       - "6881:6881"             # BitTorrent port
       - "6881:6881/udp"
-    restart: no
+    restart: unless-stopped

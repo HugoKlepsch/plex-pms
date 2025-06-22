@@ -6,7 +6,6 @@ services:
     # docker pull plexinc/pms-docker:1.41.7.9823-59f304c16
     image: plexinc/pms-docker:1.41.7.9823-59f304c16
     restart: unless-stopped
-      # user: "${PLEX_UID}:${PLEX_GID}"
     environment:
       - TZ=${PLEX_TZONE}
       - PLEX_CLAIM=${PLEX_CLAIM}
@@ -14,6 +13,6 @@ services:
       - PLEX_GID=${PLEX_GID}
     network_mode: host
     volumes:
-      - ${PLEX_CONFIG_DIR}:/config
-      - ${PLEX_TRANSCODE_DIR}:/transcode
-      - ${PLEX_DATA_DIR}:/data
+      - ${PLEX2_CONFIG_DIR}:/config
+      - ${PLEX2_TRANSCODE_DIR}:/transcode
+      - ${PLEX2_DATA_DIR}:/data/media

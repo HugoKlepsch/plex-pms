@@ -78,6 +78,27 @@ sudo ip netns exec seedbox ping google.com -c 1
   atomic moves and deduplication.
 * During development, 
 
+### Directory Structure
+
+* Torrent client gets access to `data/torrents`.
+* \*arrs gets access to `data` because they need access to `torrents`, and move 
+  things to `media`.
+* Plex and media servers gets access to `data/media`.
+
+```
+plex_data_mnt/plex2/data/
+├── torrents
+│   ├── books
+│   ├── movies
+│   ├── music
+│   └── tv
+└── media
+    ├── books
+    ├── movies
+    ├── music
+    └── tv
+```
+
 ### Samba credentials 
 
 Create a credentials file here:

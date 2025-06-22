@@ -32,11 +32,9 @@ echo "Generated units are written to ${GEN_DIR}/ before installation"
 
 # Generate the systemd mount unit name
 mount_dir_path="$(pwd)/${mount_dir}"
-
 # Strip leading slash, replace slashes with dashes and append ".mount"
 mount_unit_name="${mount_dir_path#/}"
 mount_unit_name="${mount_unit_name//\//-}.mount"
-
 echo "Creating systemd samba mount... ${mount_unit_name}"
 # Create systemd mount file
 cat >"${GEN_DIR}/${mount_unit_name}" <<EOF
@@ -57,7 +55,6 @@ WantedBy=multi-user.target
 EOF
 
 seedbox_ns_unit_name="seedbox-ns.service"
-
 echo "Creating set up network namespace service... ${seedbox_ns_unit_name}"
 # Create systemd service file
 cat >"${GEN_DIR}/${seedbox_ns_unit_name}" <<EOF
@@ -86,8 +83,8 @@ echo "Creating arrs systemd service... ${arrs_unit_name}"
 cat >"${GEN_DIR}/${arrs_unit_name}" <<EOF
 [Unit]
 Description=Run *Arr services & torrent client (qBittorrent) in docker-compose
-After=${mount_unit_name} docker.service network-online.service
-Requires=${mount_unit_name} docker.service network-online.service
+After=${mount_unit_name} docker.service network-online.target
+Requires=${mount_unit_name} docker.service network-online.target
 
 [Service]
 RestartSec=10
@@ -112,8 +109,8 @@ echo "Creating plex systemd service... ${plex_unit_name}"
 cat >"${GEN_DIR}/${plex_unit_name}" <<EOF
 [Unit]
 Description=Run plex in docker compose
-After=${mount_unit_name} docker.service network-online.service
-Requires=${mount_unit_name} docker.service network-online.service
+After=${mount_unit_name} docker.service network-online.target
+Requires=${mount_unit_name} docker.service network-online.target
 
 [Service]
 RestartSec=10
@@ -151,7 +148,7 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 		echo "Enabling & starting ${mount_unit_name}, ${seedbox_ns_unit_name}, ${arrs_unit_name}, ${plex_unit_name}"
 		# Start systemd units on startup (and right now)
 		sudo systemctl enable --now "${mount_unit_name}"
-		sudo systemctl enable --now "${seedbox_ns_unit_name}"
+		# sudo systemctl enable --now "${seedbox_ns_unit_name}"
 		sudo systemctl enable --now "${arrs_unit_name}"
 		# sudo systemctl enable --now "${plex_unit_name}"
 		exit 0
