@@ -4,3 +4,5 @@ plex_data_mnt/
 *.mount
 *.sw*
 local_data_mnt/
+seedbox-privkey
+seedbox-presharedkey

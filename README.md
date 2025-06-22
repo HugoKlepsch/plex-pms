@@ -43,20 +43,34 @@ Movie example:
 * Both `plex` and `arr` are in `plexapp` group.
 * Server management user is also in `plexapp` group.
 
+# Details
+
+## Networking
+
+* All \*arr containers are run in the `seedbox` network namespace. 
+  This namespace sends all traffic through a Wireguard tunnel to the seedbox.
+* Plex remains on the default namespace, and is exposed via existing 
+  reverse-proxy
+* This is configured by the `set-up-wg-ns.sh` script, with either `up` or 
+  `down` args.
+
+To test running something from the network namespace:
+
+```bash
+sudo ./set-up-wg-ns.sh up`
+sudo ip netns exec seedbox ping google.com -c 1
+```
+
 ## Storage
 
 * All data is stored on my Synology NAS, mounted via Samba.
 * Application configs are not on the NAS-mounted drive, because they contain
-SQLite DBs, and don't tend to work well with NAS mounts because they don't 
-support file locking properly.
+  SQLite DBs, and don't tend to work well with NAS mounts because they don't 
+  support file locking properly.
 * Mounted as `plex:plexapp`
 * All data is on one filesystem so that hardlinks can be used to enable
   atomic moves and deduplication.
 * During development, 
-
-# Details
-
-## Data mounts
 
 ### Samba credentials 
 
@@ -94,4 +108,6 @@ so it creates a `home-user-plex2-plex_data_mnt.mount` unit. This is then install
 * plex2 users `plex` and `arr` as well as `plexapp` group created [DONE]
 * plex2 running under `plex:plexapp`, replacing old plex deployment [DONE]
 * NAS mounted as `nobody:plexapp` [WON'T DO: plex doesn't like it...]
+* plex config now on non-NAS mount to avoid file locking issues [DONE]
+* Set up network namespaces [In progress]
 * Arrs... [TODO]
