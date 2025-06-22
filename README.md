@@ -39,17 +39,23 @@ Movie example:
 
 ## Permissions
 
-* Plex will run as `plex` and \*arr apps will run as `arr`.
-* Both `plex` and `arr` are in `plexapp` group.
+* Plex will run as `plex`.
+* \*arr apps will run as `arr`.
+* transmission will run as `transmission`.
+* Both `plex`, `arr`, and `transmission` are in `plexapp` group.
 * Server management user is also in `plexapp` group.
+
+## Secrets
+
+Secrets are stored in `.env.bash` file. A template is provided in `.env.bash.template`.
 
 # Details
 
 ## Networking
 
-* All \*arr containers are run in the `seedbox` network namespace. 
+* The torrent client is run in the `seedbox` network namespace. 
   This namespace sends all traffic through a Wireguard tunnel to the seedbox.
-* Plex remains on the default namespace, and is exposed via existing 
+* Plex and arrs remains on the default namespace, and is exposed via existing 
   reverse-proxy
 * This is configured by the `set-up-wg-ns.sh` script, with either `up` or 
   `down` args.
@@ -99,8 +105,22 @@ sudo chmod 600 /etc/samba/creds_plex_data
 
 
 The `create-systemd-service.sh` script will generate a set of systemd units, 
-one of which mounts the samba share. For me, I want to mount it to `/home/user/plex2/plex_data_mnt`,
-so it creates a `home-user-plex2-plex_data_mnt.mount` unit. This is then installed into `/etc/systemd/system/`.
+one of which mounts the samba share. For me, I want to mount it to 
+`/home/user/plex2/plex_data_mnt`, so it creates a 
+`home-user-plex2-plex_data_mnt.mount` unit. This is then installed into 
+`/etc/systemd/system/`.
+
+## Torrent client (qBittorrent)
+
+* qBittorrent is the torrent client.
+* It is run as `transmission:plexapp`.
+* It is run using the `arrs` systemd service in the arrs compose file 
+  `arrs-compose/docker-compose-arrs.yml`.
+* Set a WebUI password on first use. The temporary password is printed in 
+  the logs on first startup.
+* You must configure a proxy. My seedbox provider has a HTTP proxy service, 
+  which I configure in the qBittorrent webUI.
+* WebUI is available on port 3489.
 
 # Progress
 
@@ -109,5 +129,8 @@ so it creates a `home-user-plex2-plex_data_mnt.mount` unit. This is then install
 * plex2 running under `plex:plexapp`, replacing old plex deployment [DONE]
 * NAS mounted as `nobody:plexapp` [WON'T DO: plex doesn't like it...]
 * plex config now on non-NAS mount to avoid file locking issues [DONE]
-* Set up network namespaces [In progress]
-* Arrs... [TODO]
+* Set up seedbox network namespace [DONE]
+* Run transmission in `seedbox` network namespace [WON'T DO: easier to run qBT with HTTP proxy]
+* Run arrs in seedbox network namespace [WON'T DO: arrs don't need to be proxied]
+* Run qBittorrent with HTTP proxy [TODO]
+* Run arrs & qBT in docker-compose [TODO]

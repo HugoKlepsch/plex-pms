@@ -9,7 +9,7 @@ set -euo pipefail
 SERVICENAME=$(basename $(pwd))
 
 # Load variables
-ENV_FILE=".env"
+ENV_FILE=".env.bash"
 
 if [[ ! -f "$ENV_FILE" ]]; then
   echo "Error: $ENV_FILE file not found." >&2
@@ -25,16 +25,21 @@ fi
 set +a
 echo "$ENV_FILE loaded successfully."
 
+# Create generated_config directory, where the generated unit files go before they are installed
+GEN_DIR="$(pwd)/generated_config"
+mkdir -p "${GEN_DIR}"
+echo "Generated units are written to ${GEN_DIR}/ before installation"
+
 # Generate the systemd mount unit name
-path="$(pwd)/${mount_dir}"
+mount_dir_path="$(pwd)/${mount_dir}"
 
 # Strip leading slash, replace slashes with dashes and append ".mount"
-mount_unit_name="${path#/}"
+mount_unit_name="${mount_dir_path#/}"
 mount_unit_name="${mount_unit_name//\//-}.mount"
 
 echo "Creating systemd samba mount... ${mount_unit_name}"
 # Create systemd mount file
-cat >"${mount_unit_name}" <<EOF
+cat >"${GEN_DIR}/${mount_unit_name}" <<EOF
 [Unit]
 Description=Plex SMB Share
 After=network-online.target
@@ -42,7 +47,7 @@ Wants=network-online.target
 
 [Mount]
 What=//${smb_host}/${smb_drive}
-Where=${path}
+Where=${mount_dir_path}
 Type=cifs
 Options=credentials=/etc/samba/creds_plex_data,uid=${mount_user},gid=${mount_group},file_mode=0775,dir_mode=0775,iocharset=utf8,nofail
 TimeoutSec=30
@@ -55,11 +60,11 @@ seedbox_ns_unit_name="seedbox-ns.service"
 
 echo "Creating set up network namespace service... ${seedbox_ns_unit_name}"
 # Create systemd service file
-cat >"${seedbox_ns_unit_name}" <<EOF
+cat >"${GEN_DIR}/${seedbox_ns_unit_name}" <<EOF
 [Unit]
 Description=Set up the seedbox network namespace
-After=network.target
-Requires=network.target
+After=network-online.target
+Requires=network-online.target
 
 [Service]
 Restart=no
@@ -75,13 +80,14 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 EOF
 
-echo "Creating systemd service... ${SERVICENAME}.service"
+arrs_unit_name="arrs.service"
+echo "Creating arrs systemd service... ${arrs_unit_name}"
 # Create systemd service file
-cat >"${SERVICENAME}.service" <<EOF
+cat >"${GEN_DIR}/${arrs_unit_name}" <<EOF
 [Unit]
-Description=$SERVICENAME
-After=${mount_unit_name} docker.service ${seedbox_ns_unit_name}
-Requires=${mount_unit_name} docker.service ${seedbox_ns_unit_name}
+Description=Run *Arr services & torrent client (qBittorrent) in docker-compose
+After=${mount_unit_name} docker.service network-online.service
+Requires=${mount_unit_name} docker.service network-online.service
 
 [Service]
 RestartSec=10
@@ -90,11 +96,37 @@ User=root
 Group=docker
 WorkingDirectory=$(pwd)
 # Shutdown container (if running) when unit is started
-ExecStartPre=/bin/bash -c ". .env; $(which docker-compose) down"
+ExecStartPre=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/arrs/docker-compose-arrs.yml down"
 # Start container when unit is started
-ExecStart=/bin/bash -c ". .env; $(which docker-compose) up"
+ExecStart=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/arrs/docker-compose-arrs.yml up"
 # Stop container when unit is stopped
-ExecStop=/bin/bash -c ". .env; $(which docker-compose) down"
+ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/arrs/docker-compose-arrs.yml down"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+plex_unit_name="plex2.service"
+echo "Creating plex systemd service... ${plex_unit_name}"
+# Create systemd service file
+cat >"${GEN_DIR}/${plex_unit_name}" <<EOF
+[Unit]
+Description=Run plex in docker compose
+After=${mount_unit_name} docker.service network-online.service
+Requires=${mount_unit_name} docker.service network-online.service
+
+[Service]
+RestartSec=10
+Restart=always
+User=root
+Group=docker
+WorkingDirectory=$(pwd)
+# Shutdown container (if running) when unit is started
+ExecStartPre=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex2/docker-compose-plex.yml down"
+# Start container when unit is started
+ExecStart=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex2/docker-compose-plex.yml up"
+# Stop container when unit is stopped
+ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex2/docker-compose-plex.yml down"
 
 [Install]
 WantedBy=multi-user.target
@@ -102,22 +134,31 @@ EOF
 
 if [[ "${INSTALL:-false}" == "true" ]]; then
 	echo "Installing systemd samba mount... /etc/systemd/system/${mount_unit_name}"
-	sudo cp "${mount_unit_name}" "/etc/systemd/system/${mount_unit_name}"
+	sudo cp "${GEN_DIR}/${mount_unit_name}" "/etc/systemd/system/${mount_unit_name}"
 
 	echo "Installing seedbox ns service... /etc/systemd/system/${seedbox_ns_unit_name}"
-	sudo cp "${seedbox_ns_unit_name}" "/etc/systemd/system/${seedbox_ns_unit_name}"
+	sudo cp "${GEN_DIR}/${seedbox_ns_unit_name}" "/etc/systemd/system/${seedbox_ns_unit_name}"
 
-	echo "Installing systemd service... /etc/systemd/system/$SERVICENAME.service"
-	sudo cp "${SERVICENAME}.service" "/etc/systemd/system/$SERVICENAME.service"
+	echo "Installing arrs systemd service... /etc/systemd/system/${arrs_unit_name}"
+	sudo cp "${GEN_DIR}/${arrs_unit_name}" "/etc/systemd/system/${arrs_unit_name}"
+
+	echo "Installing plex systemd service... /etc/systemd/system/${plex_unit_name}"
+	sudo cp "${GEN_DIR}/${plex_unit_name}" "/etc/systemd/system/${plex_unit_name}"
 
 	sudo systemctl daemon-reload
 
-	echo "Enabling & starting ${mount_unit_name} and $SERVICENAME"
-	# Start systemd units on startup (and right now)
-	sudo systemctl enable --now "${mount_unit_name}"
-	sudo systemctl enable --now "seedbox-ns.service"
-	sudo systemctl enable --now "${SERVICENAME}.service"
-	exit 0
+	if [[ "${ENABLE_NOW:-false}" == "true" ]]; then
+		echo "Enabling & starting ${mount_unit_name}, ${seedbox_ns_unit_name}, ${arrs_unit_name}, ${plex_unit_name}"
+		# Start systemd units on startup (and right now)
+		sudo systemctl enable --now "${mount_unit_name}"
+		sudo systemctl enable --now "${seedbox_ns_unit_name}"
+		sudo systemctl enable --now "${arrs_unit_name}"
+		# sudo systemctl enable --now "${plex_unit_name}"
+		exit 0
+	else
+		echo "Run with INSTALL=true ENABLE_NOW=true ./create... to install and start and enable"
+		exit 0
+	fi
 else
 	echo "Run with INSTALL=true ./create... to install"
 	exit 0

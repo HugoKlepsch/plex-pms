@@ -1,8 +1,5 @@
-.env
+.env.bash
 plex_data_mnt/
-*.service
-*.mount
+generated_config/*
 *.sw*
 local_data_mnt/
-seedbox-privkey
-seedbox-presharedkey

@@ -1,0 +1,18 @@
+services:
+  qbittorrent:
+    image: linuxserver/qbittorrent
+    container_name: qbittorrent
+    environment:
+      - PUID=995               # transmission
+      - PGID=1003               # plexapp
+      - TZ="America/Toronto"
+      - WEBUI_PORT=3489
+      - TORRENTING_PORT=6881
+    volumes:
+      - ${QBT_CONFIG_DIR}:/config
+      - ${QBT_DOWNLOAD_DIR}:/downloads
+    ports:
+      - "3489:3489"             # Web UI
+      - "6881:6881"             # BitTorrent port
+      - "6881:6881/udp"
+    restart: no
