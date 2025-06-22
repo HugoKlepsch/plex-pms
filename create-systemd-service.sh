@@ -51,13 +51,37 @@ TimeoutSec=30
 WantedBy=multi-user.target
 EOF
 
+seedbox_ns_unit_name="seedbox-ns.service"
+
+echo "Creating set up network namespace service... ${seedbox_ns_unit_name}"
+# Create systemd service file
+cat >"${seedbox_ns_unit_name}" <<EOF
+[Unit]
+Description=Set up the seedbox network namespace
+After=network.target
+Requires=network.target
+
+[Service]
+Restart=no
+User=root
+WorkingDirectory=$(pwd)
+# Start container when unit is started
+ExecStart=/bin/bash -c "./set-up-wg-ns.sh up"
+# Stop container when unit is stopped
+ExecStop=/bin/bash -c "./set-up-wg-ns.sh down"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 echo "Creating systemd service... ${SERVICENAME}.service"
 # Create systemd service file
 cat >"${SERVICENAME}.service" <<EOF
 [Unit]
 Description=$SERVICENAME
-After=${mount_unit_name} docker.service
-Requires=${mount_unit_name} docker.service
+After=${mount_unit_name} docker.service ${seedbox_ns_unit_name}
+Requires=${mount_unit_name} docker.service ${seedbox_ns_unit_name}
 
 [Service]
 RestartSec=10
@@ -80,6 +104,9 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 	echo "Installing systemd samba mount... /etc/systemd/system/${mount_unit_name}"
 	sudo cp "${mount_unit_name}" "/etc/systemd/system/${mount_unit_name}"
 
+	echo "Installing seedbox ns service... /etc/systemd/system/${seedbox_ns_unit_name}"
+	sudo cp "${seedbox_ns_unit_name}" "/etc/systemd/system/${seedbox_ns_unit_name}"
+
 	echo "Installing systemd service... /etc/systemd/system/$SERVICENAME.service"
 	sudo cp "${SERVICENAME}.service" "/etc/systemd/system/$SERVICENAME.service"
 
@@ -88,6 +115,7 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 	echo "Enabling & starting ${mount_unit_name} and $SERVICENAME"
 	# Start systemd units on startup (and right now)
 	sudo systemctl enable --now "${mount_unit_name}"
+	sudo systemctl enable --now "seedbox-ns.service"
 	sudo systemctl enable --now "${SERVICENAME}.service"
 	exit 0
 else
