@@ -1,11 +1,12 @@
 services:
+  # Torrent client
   qbittorrent:
     image: linuxserver/qbittorrent
     container_name: qbittorrent
     environment:
-      - PUID=995               # transmission
-      - PGID=1003               # plexapp
-      - TZ="America/Toronto"
+      - PUID=${QBT_UID} # transmission
+      - PGID=${QBT_GID} # plexapp
+      - TZ=${PLEX_TZONE}
       - WEBUI_PORT=3489
       - TORRENTING_PORT=6881
     volumes:
@@ -16,3 +17,21 @@ services:
       - "6881:6881"             # BitTorrent port
       - "6881:6881/udp"
     restart: unless-stopped
+
+  # Prowlarr - Indexer manager
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=${PLEX_UID}
+      - PGID=${PLEX_GID}
+      - TZ=${PLEX_TZONE}
+    volumes:
+      - ${PROWLARR_CONFIG_DIR}:/config
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+
+networks:
+  default:
+    name: arr-stack

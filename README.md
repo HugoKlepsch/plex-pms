@@ -12,14 +12,14 @@ during development.
 ## Components
 
 * Plex - Media server application, content metadata.
-* Lidarr - Music collection auto-downloader
-* Radarr - Movie collection auto-downloader
-* Readarr - Book collection auto-downloader
-* Sonarr - TV collection auto-downloader
-* Bazarr - Subtitle auto-downloader
-* Prowlarr - Central indexer, supporting Lidarr, Radar, Readarr, Sonarr
-* Oversearr - Media requester UI
-* TBD - Bittorrent client
+* Lidarr - Music collection auto-downloader                              (port 8686)
+* Radarr - Movie collection auto-downloader                              (port 7878)
+* Readarr - Book collection auto-downloader                              (port 8787)
+* Sonarr - TV collection auto-downloader                                 (port 8989)
+* Bazarr - Subtitle auto-downloader                                      (port 6767)
+* Prowlarr - Central indexer, supporting Lidarr, Radar, Readarr, Sonarr  (port 9696)
+* Oversearr - Media requester UI                                         (port 5055)
+* qBittorrent - Bittorrent client                                        (port 3489)
 
 Components are run as docker containers, started with docker-compose,
 service lifecycle managed by Systemd unit files. Configuration and secrets
