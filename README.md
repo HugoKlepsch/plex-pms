@@ -91,7 +91,8 @@ plex_data_mnt/plex2/data/
 │   ├── books
 │   ├── movies
 │   ├── music
-│   └── tv
+│   ├── tv
+│   └── prowlarr
 └── media
     ├── books
     ├── movies
