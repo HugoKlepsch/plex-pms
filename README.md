@@ -154,4 +154,4 @@ one of which mounts the samba share. For me, I want to mount it to
 * Run transmission in `seedbox` network namespace [WON'T DO: easier to run qBT with HTTP proxy]
 * Run arrs in seedbox network namespace [WON'T DO: arrs don't need to be proxied]
 * Run qBittorrent with HTTP proxy [DONE]
-* Run arrs & qBT in docker-compose [TODO]
+* Run arrs & qBT in docker-compose [DONE]
