@@ -1,5 +1,32 @@
 services:
-  # Torrent client
+  # GlueTun - VPN tunnel provider
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      # qbt
+      - "3489:3489"             # Web UI
+      - "6881:6881/tcp"         # BitTorrent port
+      - "6881:6881/udp"
+      - "8000:8000"             # GlueTun metrics
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+      - WIREGUARD_ENDPOINT_IP=${GT_WG_ENDPOINT_IP}
+      - WIREGUARD_ENDPOINT_PORT=${GT_WG_ENDPOINT_PORT}
+      - WIREGUARD_PUBLIC_KEY=${GT_WG_PUBLIC_KEY}
+      - WIREGUARD_PRIVATE_KEY=${GT_WG_PRIVATE_KEY}
+      - WIREGUARD_PRESHARED_KEY=${GT_WG_PRESHARED_KEY}
+      - WIREGUARD_ADDRESSES=${GT_WG_ADDRESSES}
+      - WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL=${GT_WG_KEEPALIVE}
+      - WIREGUARD_MTU=${GT_WG_MTU}
+    restart: unless-stopped
+
+  # qBittorrent - Torrent client
   qbittorrent:
     image: linuxserver/qbittorrent
     container_name: qbittorrent
@@ -12,11 +39,16 @@ services:
     volumes:
       - ${QBT_CONFIG_DIR}:/config
       - ${ARR_TORRENT_DIR}:/data/torrents
-    ports:
-      - "3489:3489"             # Web UI
-      - "6881:6881"             # BitTorrent port
-      - "6881:6881/udp"
+    # ports:
+      # - "3489:3489"             # Web UI
+      # - "6881:6881"             # BitTorrent port
+      # - "6881:6881/udp"
     restart: unless-stopped
+    # Run in the gluetun network - all traffic in VPN
+    # This also means that to access qbittorrent, we need to connect to the 
+    # gluetun host, and add any required port forwards there. The `ports` 
+    # section for qbittorrent is commented out for that reason.
+    network_mode: "service:gluetun"
 
   # Prowlarr - Indexer manager
   prowlarr:

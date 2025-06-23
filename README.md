@@ -46,6 +46,16 @@ Secrets are stored in `.env.bash` file. A template is provided in `.env.bash.tem
 
 # Details
 
+## Networking
+
+* The torrent client is run in the `gluetun` network so that all traffic is 
+  tunnelled.
+* Plex and arrs remains on the default namespace; they do not need to be 
+  tunnelled.
+* GlueTUN says that it supports grabbing all configuration from a `wg0.conf`
+  file bind mounted into it, but after various attempts I decided that this
+  feature is broken. Configuration is in `.env.bash`.
+
 ## Storage
 
 * All data is stored on my Synology NAS, mounted via Samba.
