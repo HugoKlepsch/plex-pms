@@ -54,29 +54,6 @@ TimeoutSec=30
 WantedBy=multi-user.target
 EOF
 
-seedbox_ns_unit_name="seedbox-ns.service"
-echo "Creating set up network namespace service... ${seedbox_ns_unit_name}"
-# Create systemd service file
-cat >"${GEN_DIR}/${seedbox_ns_unit_name}" <<EOF
-[Unit]
-Description=Set up the seedbox network namespace
-After=network-online.target
-Requires=network-online.target
-
-[Service]
-Restart=no
-User=root
-WorkingDirectory=$(pwd)
-# Start container when unit is started
-ExecStart=/bin/bash -c "./set-up-wg-ns.sh up"
-# Stop container when unit is stopped
-ExecStop=/bin/bash -c "./set-up-wg-ns.sh down"
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
 arrs_unit_name="arrs.service"
 echo "Creating arrs systemd service... ${arrs_unit_name}"
 # Create systemd service file
@@ -129,12 +106,46 @@ ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex2/d
 WantedBy=multi-user.target
 EOF
 
+backup_service_unit_name="plex-backup.service"
+echo "Creating backup systemd service... ${backup_service_unit_name}"
+# Create systemd service file
+cat >"${GEN_DIR}/${backup_service_unit_name}" <<EOF
+[Unit]
+Description=Plex Data Backup Service
+After=${mount_unit_name} docker.service network-online.target
+Requires=${mount_unit_name} docker.service network-online.target
+
+[Service]
+Type=oneshot
+User=user
+Group=user
+WorkingDirectory=$(pwd)
+ExecStart=$(pwd)/backup.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+backup_timer_unit_name="plex-backup.timer"
+echo "Creating backup systemd timer... ${backup_timer_unit_name}"
+# Create systemd service file
+cat >"${GEN_DIR}/${backup_timer_unit_name}" <<EOF
+[Unit]
+Description=Run Plex Data Backup Daily
+Requires=plex-backup.service
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=1800
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
 if [[ "${INSTALL:-false}" == "true" ]]; then
 	echo "Installing systemd samba mount... /etc/systemd/system/${mount_unit_name}"
 	sudo cp "${GEN_DIR}/${mount_unit_name}" "/etc/systemd/system/${mount_unit_name}"
-
-	echo "Installing seedbox ns service... /etc/systemd/system/${seedbox_ns_unit_name}"
-	sudo cp "${GEN_DIR}/${seedbox_ns_unit_name}" "/etc/systemd/system/${seedbox_ns_unit_name}"
 
 	echo "Installing arrs systemd service... /etc/systemd/system/${arrs_unit_name}"
 	sudo cp "${GEN_DIR}/${arrs_unit_name}" "/etc/systemd/system/${arrs_unit_name}"
@@ -142,15 +153,22 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 	echo "Installing plex systemd service... /etc/systemd/system/${plex_unit_name}"
 	sudo cp "${GEN_DIR}/${plex_unit_name}" "/etc/systemd/system/${plex_unit_name}"
 
+	echo "Installing plex backup service... /etc/systemd/system/${backup_service_unit_name}"
+	sudo cp "${GEN_DIR}/${backup_service_unit_name}" "/etc/systemd/system/${backup_service_unit_name}"
+
+	echo "Installing plex backup timer... /etc/systemd/system/${backup_timer_unit_name}"
+	sudo cp "${GEN_DIR}/${backup_timer_unit_name}" "/etc/systemd/system/${backup_timer_unit_name}"
+
 	sudo systemctl daemon-reload
 
 	if [[ "${ENABLE_NOW:-false}" == "true" ]]; then
 		echo "Enabling & starting ${mount_unit_name}, ${seedbox_ns_unit_name}, ${arrs_unit_name}, ${plex_unit_name}"
 		# Start systemd units on startup (and right now)
 		sudo systemctl enable --now "${mount_unit_name}"
-		# sudo systemctl enable --now "${seedbox_ns_unit_name}"
 		sudo systemctl enable --now "${arrs_unit_name}"
 		# sudo systemctl enable --now "${plex_unit_name}"
+		# Note: you only need to enable/start the timer, not the service it runs
+		sudo systemctl enable --now "${backup_timer_unit_name}"
 		exit 0
 	else
 		echo "Run with INSTALL=true ENABLE_NOW=true ./create... to install and start and enable"

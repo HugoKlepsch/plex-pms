@@ -144,6 +144,69 @@ one of which mounts the samba share. For me, I want to mount it to
   which I configure in the qBittorrent webUI.
 * WebUI is available on port 3489.
 
+# Backup & Restore
+
+* The config directories are backed up using the `backup.sh` script. 
+* You can restore from backup using `restore.sh`.
+* `backup.sh` is run daily using `plex-backup.service` and `plex-backup.timer`
+  (generated).
+
+## Usage
+
+### Manual Backup
+
+```bash
+./backup.sh
+```
+
+- Creates timestamped backup in `~/plex/plex_data_mnt/plex2/backups/`
+- Excludes cache, logs, and temporary files
+- Keeps latest 30 days of backups
+- Creates `latest_backup.tar.gz` symlink
+
+### Manual Restore
+
+```bash
+./restore.sh
+```
+
+- Interactive menu to select backup
+- Creates safety backup of existing data
+- Restores selected backup to original location
+
+**Or specify backup file directly:**
+
+```bash
+./restore.sh plex_backup_20240623_120000.tar.gz
+```
+
+### Check Backup Status
+
+```bash
+# View systemd timer status
+sudo systemctl status plex-backup.timer
+
+# View recent backup logs
+sudo journalctl -u plex-backup.service -n 20
+
+# Check backup directory
+ls -la ~/plex/plex_data_mnt/plex2/backups/
+```
+
+## Directory Structure
+
+```
+~/plex/
+├── backup.sh              # Backup script
+├── restore.sh             # Restore script
+├── local_data_mnt/plex/   # Source data
+└── plex_data_mnt/plex2/backups/  # Backup destination
+    ├── plex_backup_YYYYMMDD_HHMMSS.tar.gz
+    ├── latest_backup.tar.gz -> (symlink to latest)
+    ├── backup.log
+    └── restore.log
+```
+
 # Progress
 
 * plex2 NAS mounting has migrated from sshfs -> SMB [DONE]
@@ -156,3 +219,6 @@ one of which mounts the samba share. For me, I want to mount it to
 * Run arrs in seedbox network namespace [WON'T DO: arrs don't need to be proxied]
 * Run qBittorrent with HTTP proxy [DONE]
 * Run arrs & qBT in docker-compose [DONE]
+* Create backup scripts, run daily [TODO]
+* Set up libraries [TODO]
+* Set up overseerr [TODO]
