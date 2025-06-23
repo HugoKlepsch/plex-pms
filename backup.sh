@@ -4,8 +4,8 @@
 # This script creates compressed backups of Plex configuration directories
 
 # Configuration
-SOURCE_DIR="$HOME/plex/local_data_mnt/plex"
-BACKUP_DIR="$HOME/plex/plex_data_mnt/plex2/backups"
+SOURCE_DIR="/home/user/plex/local_data_mnt/plex"
+BACKUP_DIR="/home/user/plex/plex_data_mnt/plex2/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_NAME="plex_backup_${DATE}"
 LOG_FILE="$BACKUP_DIR/backup.log"
@@ -36,6 +36,33 @@ print_status() {
 	esac
 }
 
+
+# Define required user and group
+REQUIRED_USER="plex"
+REQUIRED_GROUP="plexapp"
+
+# Get current user and primary group
+CURRENT_USER=$(whoami)
+CURRENT_GROUP=$(id -gn)
+
+# Check if running as required user and group
+if [[ "$CURRENT_USER" != "$REQUIRED_USER" ]] || [[ "$CURRENT_GROUP" != "$REQUIRED_GROUP" ]]; then
+	echo "Error: This script must be run as user '$REQUIRED_USER' with group '$REQUIRED_GROUP'"
+	echo
+	echo "Usage:"
+	echo "  Use sudo to run as specific user:"
+	echo "    sudo -u $REQUIRED_USER -g $REQUIRED_GROUP $0 $*"
+	echo
+	echo "Current user: $CURRENT_USER"
+	echo "Current group: $CURRENT_GROUP"
+	echo "Required user: $REQUIRED_USER"
+	echo "Required group: $REQUIRED_GROUP"
+	exit 1
+fi
+
+# Script continues here if user/group check passes
+echo "Running as correct user ($CURRENT_USER) and group ($CURRENT_GROUP)"
+
 # Check if source directory exists
 if [ ! -d "$SOURCE_DIR" ]; then
 	print_status "Source directory $SOURCE_DIR does not exist!" "ERROR"
@@ -65,7 +92,7 @@ print_status "Creating compressed backup: $BACKUP_FILE" "INFO"
 cd "$(dirname "$SOURCE_DIR")" || exit 1
 
 # Create tar backup with progress indication and exclude cache/temp files
-sudo -u plex -g plexapp tar --exclude='*/Cache/*' \
+tar --exclude='*/Cache/*' \
 	--exclude='*/cache/*' \
 	--exclude='*/Logs/*' \
 	--exclude='*/logs/*' \
@@ -85,10 +112,10 @@ if [ $? -eq 0 ]; then
 	print_status "Free space: $(df -h ${BACKUP_DIR})" "INFO"
 	log_message "SUCCESS: Backup completed - Size: $BACKUP_SIZE"
 
-# Create a symlink to the latest backup
-LATEST_LINK="$BACKUP_DIR/latest_backup.tar.gz"
-ln -sf "$BACKUP_FILE" "$LATEST_LINK"
-print_status "Latest backup symlink updated: $LATEST_LINK" "INFO"
+	# Create a symlink to the latest backup
+	LATEST_LINK="$BACKUP_DIR/latest_backup.tar.gz"
+	ln -sf "$BACKUP_FILE" "$LATEST_LINK"
+	print_status "Latest backup symlink updated: $LATEST_LINK" "INFO"
 else
 	print_status "Backup failed!" "ERROR"
 	log_message "ERROR: Backup failed"

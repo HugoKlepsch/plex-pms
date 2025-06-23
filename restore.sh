@@ -4,8 +4,8 @@
 # This script restores Plex configuration directories from backup
 
 # Configuration
-RESTORE_TARGET="$HOME/plex/local_data_mnt"
-BACKUP_DIR="$HOME/plex/plex_data_mnt/plex2/backups"
+RESTORE_TARGET="/home/user/plex/local_data_mnt"
+BACKUP_DIR="/home/user/plex/plex_data_mnt/plex2/backups"
 LOG_FILE="$BACKUP_DIR/restore.log"
 
 # Colors for output

@@ -117,8 +117,8 @@ Requires=${mount_unit_name} docker.service network-online.target
 
 [Service]
 Type=oneshot
-User=user
-Group=user
+User=plex
+Group=plexapp
 WorkingDirectory=$(pwd)
 ExecStart=$(pwd)/backup.sh
 
@@ -162,7 +162,7 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 	sudo systemctl daemon-reload
 
 	if [[ "${ENABLE_NOW:-false}" == "true" ]]; then
-		echo "Enabling & starting ${mount_unit_name}, ${seedbox_ns_unit_name}, ${arrs_unit_name}, ${plex_unit_name}"
+		echo "Enabling & starting ${mount_unit_name}, ${arrs_unit_name}, ${plex_unit_name}, ${backup_service_unit_name}, ${backup_timer_unit_name}"
 		# Start systemd units on startup (and right now)
 		sudo systemctl enable --now "${mount_unit_name}"
 		sudo systemctl enable --now "${arrs_unit_name}"
