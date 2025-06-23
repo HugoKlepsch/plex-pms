@@ -80,7 +80,7 @@ ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/arrs/do
 WantedBy=multi-user.target
 EOF
 
-plex_unit_name="plex2.service"
+plex_unit_name="plex.service"
 echo "Creating plex systemd service... ${plex_unit_name}"
 # Create systemd service file
 cat >"${GEN_DIR}/${plex_unit_name}" <<EOF
@@ -96,11 +96,11 @@ User=root
 Group=docker
 WorkingDirectory=$(pwd)
 # Shutdown container (if running) when unit is started
-ExecStartPre=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex2/docker-compose-plex.yml down"
+ExecStartPre=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex/docker-compose-plex.yml down"
 # Start container when unit is started
-ExecStart=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex2/docker-compose-plex.yml up"
+ExecStart=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex/docker-compose-plex.yml up"
 # Stop container when unit is stopped
-ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex2/docker-compose-plex.yml down"
+ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex/docker-compose-plex.yml down"
 
 [Install]
 WantedBy=multi-user.target
@@ -166,7 +166,7 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 		# Start systemd units on startup (and right now)
 		sudo systemctl enable --now "${mount_unit_name}"
 		sudo systemctl enable --now "${arrs_unit_name}"
-		# sudo systemctl enable --now "${plex_unit_name}"
+		sudo systemctl enable --now "${plex_unit_name}"
 		# Note: you only need to enable/start the timer, not the service it runs
 		sudo systemctl enable --now "${backup_timer_unit_name}"
 		exit 0
