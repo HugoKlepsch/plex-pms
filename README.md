@@ -1,11 +1,6 @@
-# Plex 2 setup
+# Plex
 
 ---
-
-Plex 2 is the development name for the next-generation depoyment of
-my home media server and its supporting systems. It is so named because
-I already have an in-use deployment of plex, which I intend to maintain
-during development.
 
 # High level design
 
@@ -40,9 +35,9 @@ Movie example:
 ## Permissions
 
 * Plex will run as `plex`.
-* \*arr apps will run as `arr`.
+* \*arr apps will run as `plex`.
 * transmission will run as `transmission`.
-* Both `plex`, `arr`, and `transmission` are in `plexapp` group.
+* Both `plex`, and `transmission` are in `plexapp` group.
 * Server management user is also in `plexapp` group.
 
 ## Secrets
@@ -50,22 +45,6 @@ Movie example:
 Secrets are stored in `.env.bash` file. A template is provided in `.env.bash.template`.
 
 # Details
-
-## Networking
-
-* The torrent client is run in the `seedbox` network namespace. 
-  This namespace sends all traffic through a Wireguard tunnel to the seedbox.
-* Plex and arrs remains on the default namespace, and is exposed via existing 
-  reverse-proxy
-* This is configured by the `set-up-wg-ns.sh` script, with either `up` or 
-  `down` args.
-
-To test running something from the network namespace:
-
-```bash
-sudo ./set-up-wg-ns.sh up`
-sudo ip netns exec seedbox ping google.com -c 1
-```
 
 ## Storage
 
@@ -76,7 +55,6 @@ sudo ip netns exec seedbox ping google.com -c 1
 * Mounted as `plex:plexapp`
 * All data is on one filesystem so that hardlinks can be used to enable
   atomic moves and deduplication.
-* During development, 
 
 ### Directory Structure
 
@@ -163,6 +141,7 @@ one of which mounts the samba share. For me, I want to mount it to
 - Excludes cache, logs, and temporary files
 - Keeps latest 30 days of backups
 - Creates `latest_backup.tar.gz` symlink
+- Must be run as `plex:plexapp` user:group
 
 ### Manual Restore
 
@@ -221,6 +200,6 @@ ls -la ~/plex/plex_data_mnt/plex2/backups/
 * Run arrs & qBT in docker-compose [DONE]
 * Create backup scripts, run daily [DONE]
 * Set up libraries [DONE]
-* Run plex off of new libraries [TODO]
+* Run plex off of new libraries [DONE]
 * Fix download client connection issues [TODO]
 * Set up overseerr [TODO]
