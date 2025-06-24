@@ -212,5 +212,5 @@ ls -la ~/plex/plex_data_mnt/plex2/backups/
 * Set up libraries [DONE]
 * Run plex off of new libraries [DONE]
 * Actually route qBittorrent traffic via VPN using GlueTUN [DONE]
-* Fix download client connection issues: port forwarding? [TODO]
+* Fix download client connection issues: port forwarding? [DONE: switched to airVPN w/ port forwarding]
 * Set up overseerr [TODO]

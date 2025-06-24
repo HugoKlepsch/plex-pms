@@ -14,7 +14,7 @@ services:
       - "6881:6881/udp"
       - "8000:8000"             # GlueTun metrics
     environment:
-      - VPN_SERVICE_PROVIDER=custom
+      - VPN_SERVICE_PROVIDER=airvpn
       - VPN_TYPE=wireguard
       - WIREGUARD_ENDPOINT_IP=${GT_WG_ENDPOINT_IP}
       - WIREGUARD_ENDPOINT_PORT=${GT_WG_ENDPOINT_PORT}
@@ -24,6 +24,7 @@ services:
       - WIREGUARD_ADDRESSES=${GT_WG_ADDRESSES}
       - WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL=${GT_WG_KEEPALIVE}
       - WIREGUARD_MTU=${GT_WG_MTU}
+      - FIREWALL_VPN_INPUT_PORTS=${GT_WG_FW_VPN_IN_PORTS}
     restart: unless-stopped
 
   # qBittorrent - Torrent client
