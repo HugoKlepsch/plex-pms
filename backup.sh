@@ -98,7 +98,8 @@ tar --exclude='*/Cache/*' \
 	--exclude='*/logs/*' \
 	--exclude='*/tmp/*' \
 	--exclude='*/temp/*' \
-	--exclude='*/qbt_config/.bash_history' \
+	--exclude='*/plex_transcode/*' \
+	--exclude='*/.*ash_history' \
 	--exclude='*/qbt_config/qBittorrent/ipc-socket' \
 	-czf "$BACKUP_FILE" \
 	"$(basename "$SOURCE_DIR")" 2>&1
