@@ -211,5 +211,6 @@ ls -la ~/plex/plex_data_mnt/plex2/backups/
 * Create backup scripts, run daily [DONE]
 * Set up libraries [DONE]
 * Run plex off of new libraries [DONE]
-* Fix download client connection issues [TODO]
+* Actually route qBittorrent traffic via VPN using GlueTUN [DONE]
+* Fix download client connection issues: port forwarding? [TODO]
 * Set up overseerr [TODO]
