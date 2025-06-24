@@ -214,3 +214,4 @@ ls -la ~/plex/plex_data_mnt/plex2/backups/
 * Actually route qBittorrent traffic via VPN using GlueTUN [DONE]
 * Fix download client connection issues: port forwarding? [DONE: switched to airVPN w/ port forwarding]
 * Set up overseerr [DONE]
+* Set up automatic collections using kometa [TODO]
