@@ -92,6 +92,10 @@ print_status "Creating compressed backup: $BACKUP_FILE" "INFO"
 cd "$(dirname "$SOURCE_DIR")" || exit 1
 
 # Create tar backup with progress indication and exclude cache/temp files
+# re: excluding db-wal:
+# WAL files are written to a lot, and periodically checkpointed back
+# to the main db. tar doesn't like the file changing.
+# This loses data from the sqlite WAL, but at least the backup completes.
 tar --exclude='*/Cache/*' \
 	--exclude='*/cache/*' \
 	--exclude='*/Logs/*' \
@@ -101,6 +105,8 @@ tar --exclude='*/Cache/*' \
 	--exclude='*/plex_transcode/*' \
 	--exclude='*/.*ash_history' \
 	--exclude='*/qbt_config/qBittorrent/ipc-socket' \
+	--exclude='*/*.db-shm' \
+	--exclude='*/*.db-wal' \
 	-czf "$BACKUP_FILE" \
 	"$(basename "$SOURCE_DIR")" 2>&1
 
@@ -120,12 +126,17 @@ if [ $? -eq 0 ]; then
 else
 	print_status "Backup failed!" "ERROR"
 	log_message "ERROR: Backup failed"
+	if [ -f "${BACKUP_DIR}/${BACKUP_NAME}" ]; then
+		log_message "Renaming backup to include failed_ prefix"
+		mv "${BACKUP_DIR}/${BACKUP_NAME}" "${BACKUP_DIR}/failed_${BACKUP_NAME}"
+	fi
 	exit 1
 fi
 
 # Clean up old backups (keep last 30 days)
 print_status "Cleaning up old backups (keeping last 30 days)..." "INFO"
 find "$BACKUP_DIR" -name "plex_backup_*.tar.gz" -type f -mtime +30 -delete
+find "$BACKUP_DIR" -name "failed_plex_backup_*.tar.gz" -type f -mtime +30 -delete
 log_message "Cleanup completed"
 
 print_status "Backup process completed!" "SUCCESS"
