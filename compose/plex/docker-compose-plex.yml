@@ -5,6 +5,7 @@ services:
     # Update to newest
     # docker pull plexinc/pms-docker:1.41.7.9823-59f304c16
     image: plexinc/pms-docker:1.41.8.9834-071366d65
+      # image: plexinc/pms-docker:1.41.7.9823-59f304c16
     restart: unless-stopped
     environment:
       - TZ=${PLEX_TZONE}
