@@ -41,7 +41,11 @@ cat >"${GEN_DIR}/${mount_unit_name}" <<EOF
 [Unit]
 Description=Plex SMB Share
 After=network-online.target
-Wants=network-online.target
+Requires=network-online.target
+Restart=on-failure
+RestartSec=10
+# 60 attempts 10 seconds apart = 10 minutes minimum. Might be longer due to TimeoutSec
+StartLimitBurst=60
 
 [Mount]
 What=//${smb_host}/${smb_drive}
@@ -112,8 +116,8 @@ echo "Creating backup systemd service... ${backup_service_unit_name}"
 cat >"${GEN_DIR}/${backup_service_unit_name}" <<EOF
 [Unit]
 Description=Plex Data Backup Service
-After=${mount_unit_name} docker.service network-online.target
-Requires=${mount_unit_name} docker.service network-online.target
+After=${mount_unit_name}
+Requires=${mount_unit_name}
 
 [Service]
 Type=oneshot
@@ -132,7 +136,7 @@ echo "Creating backup systemd timer... ${backup_timer_unit_name}"
 cat >"${GEN_DIR}/${backup_timer_unit_name}" <<EOF
 [Unit]
 Description=Run Plex Data Backup Daily
-Requires=plex-backup.service
+Requires=${backup_service_unit_name}
 
 [Timer]
 OnCalendar=daily
