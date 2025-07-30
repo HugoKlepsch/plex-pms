@@ -129,6 +129,21 @@ services:
       - "6767:6767"
     restart: unless-stopped
 
+  # Tautulli - Plex monitoring and statistics
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    environment:
+      - PUID=${PLEX_UID}
+      - PGID=${PLEX_GID}
+      - UMASK=002
+      - TZ=${PLEX_TZONE}
+    volumes:
+      - ${TAUTULLI_CONFIG_DIR}:/config
+    ports:
+      - "8181:8181"
+    restart: unless-stopped
+
 networks:
   default:
     name: arr-stack
