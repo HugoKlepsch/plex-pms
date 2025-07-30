@@ -1,4 +1,3 @@
-version: '2'
 services:
   plex2:
     container_name: plex2

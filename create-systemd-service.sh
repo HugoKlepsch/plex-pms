@@ -63,7 +63,7 @@ echo "Creating arrs systemd service... ${arrs_unit_name}"
 # Create systemd service file
 cat >"${GEN_DIR}/${arrs_unit_name}" <<EOF
 [Unit]
-Description=Run *Arr services & torrent client (qBittorrent) in docker-compose
+Description=Run *Arr services & torrent client (qBittorrent) in docker compose
 After=${mount_unit_name} docker.service network-online.target
 Requires=${mount_unit_name} docker.service network-online.target
 
@@ -74,11 +74,11 @@ User=root
 Group=docker
 WorkingDirectory=$(pwd)
 # Shutdown container (if running) when unit is started
-ExecStartPre=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/arrs/docker-compose-arrs.yml down"
+ExecStartPre=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/arrs/docker-compose-arrs.yml down"
 # Start container when unit is started
-ExecStart=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/arrs/docker-compose-arrs.yml up"
+ExecStart=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/arrs/docker-compose-arrs.yml up"
 # Stop container when unit is stopped
-ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/arrs/docker-compose-arrs.yml down"
+ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/arrs/docker-compose-arrs.yml down"
 
 [Install]
 WantedBy=multi-user.target
@@ -100,11 +100,11 @@ User=root
 Group=docker
 WorkingDirectory=$(pwd)
 # Shutdown container (if running) when unit is started
-ExecStartPre=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex/docker-compose-plex.yml down"
+ExecStartPre=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/plex/docker-compose-plex.yml down"
 # Start container when unit is started
-ExecStart=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex/docker-compose-plex.yml up"
+ExecStart=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/plex/docker-compose-plex.yml up"
 # Stop container when unit is stopped
-ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker-compose) -f compose/plex/docker-compose-plex.yml down"
+ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/plex/docker-compose-plex.yml down"
 
 [Install]
 WantedBy=multi-user.target
