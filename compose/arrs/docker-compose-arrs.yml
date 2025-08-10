@@ -8,10 +8,12 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      # qbt
-      - "3489:3489"             # Web UI
-      - "6881:6881/tcp"         # BitTorrent port
+      - "3489:3489"             # qbittorrent Web UI
+      - "6881:6881/tcp"         # qBitTorrent port
       - "6881:6881/udp"
+      - "3490:3490"             # qbittorrent2 Web UI
+      - "6882:6882/tcp"         # qBitTorrent2 port
+      - "6882:6882/udp"
       - "8000:8000"             # GlueTun metrics
     environment:
       - VPN_SERVICE_PROVIDER=airvpn
@@ -49,6 +51,30 @@ services:
     # This also means that to access qbittorrent, we need to connect to the 
     # gluetun host, and add any required port forwards there. The `ports` 
     # section for qbittorrent is commented out for that reason.
+    network_mode: "service:gluetun"
+    
+  # qBittorrent2 - Second Torrent client
+  qbittorrent2:
+    image: linuxserver/qbittorrent
+    container_name: qbittorrent2
+    environment:
+      - PUID=${QBT_UID} # transmission
+      - PGID=${QBT_GID} # plexapp
+      - TZ=${PLEX_TZONE}
+      - WEBUI_PORT=3490
+      - TORRENTING_PORT=6882
+    volumes:
+      - ${QBT2_CONFIG_DIR}:/config
+      - ${ARR_TORRENT_DIR}:/data/torrents
+    # ports:
+      # - "3490:3490"             # Web UI
+      # - "6882:6882"             # BitTorrent port
+      # - "6882:6882/udp"
+    restart: unless-stopped
+    # Run in the gluetun network - all traffic in VPN
+    # This also means that to access qbittorrent2, we need to connect to the 
+    # gluetun host, and add any required port forwards there. The `ports`
+    # section for qbittorrent2 is commented out for that reason.
     network_mode: "service:gluetun"
 
   # Prowlarr - Indexer manager
