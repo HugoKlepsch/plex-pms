@@ -8,7 +8,7 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     healthcheck:
-      test: ["/gluetun-entrypoint", "healthcheck"]
+      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
       interval: 5s
       timeout: 5s
       retries: 1
