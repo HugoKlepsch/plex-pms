@@ -7,6 +7,12 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
+    healthcheck:
+      test: ["/gluetun-entrypoint", "healthcheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 1
+      start_period: 10s
     ports:
       - "3489:3489"             # qbittorrent Web UI
       - "${QBT_TORRENT_PORT}:${QBT_TORRENT_PORT}/tcp"         # qBitTorrent port
@@ -53,7 +59,8 @@ services:
     # section for qbittorrent is commented out for that reason.
     network_mode: "service:gluetun"
     depends_on:
-      - gluetun
+      gluetun:
+        condition: service_healthy
     
   # qBittorrent2 - Second Torrent client
   qbittorrent2:
@@ -79,7 +86,8 @@ services:
     # section for qbittorrent2 is commented out for that reason.
     network_mode: "service:gluetun"
     depends_on:
-      - gluetun
+      gluetun:
+        condition: service_healthy
 
   # Prowlarr - Indexer manager
   prowlarr:
