@@ -52,6 +52,8 @@ services:
     # gluetun host, and add any required port forwards there. The `ports` 
     # section for qbittorrent is commented out for that reason.
     network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     
   # qBittorrent2 - Second Torrent client
   qbittorrent2:
@@ -76,6 +78,8 @@ services:
     # gluetun host, and add any required port forwards there. The `ports`
     # section for qbittorrent2 is commented out for that reason.
     network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
 
   # Prowlarr - Indexer manager
   prowlarr:
