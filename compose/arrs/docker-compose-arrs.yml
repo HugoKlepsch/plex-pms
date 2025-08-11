@@ -9,11 +9,11 @@ services:
       - /dev/net/tun:/dev/net/tun
     ports:
       - "3489:3489"             # qbittorrent Web UI
-      - "6881:6881/tcp"         # qBitTorrent port
-      - "6881:6881/udp"
+      - "${QBT_TORRENT_PORT}:${QBT_TORRENT_PORT}/tcp"         # qBitTorrent port
+      - "${QBT_TORRENT_PORT}:${QBT_TORRENT_PORT}/udp"
       - "3490:3490"             # qbittorrent2 Web UI
-      - "6882:6882/tcp"         # qBitTorrent2 port
-      - "6882:6882/udp"
+      - "${QBT2_TORRENT_PORT}:${QBT2_TORRENT_PORT}/tcp"         # qBitTorrent port
+      - "${QBT2_TORRENT_PORT}:${QBT2_TORRENT_PORT}/udp"
       - "8000:8000"             # GlueTun metrics
     environment:
       - VPN_SERVICE_PROVIDER=airvpn
@@ -38,7 +38,7 @@ services:
       - PGID=${QBT_GID} # plexapp
       - TZ=${PLEX_TZONE}
       - WEBUI_PORT=3489
-      - TORRENTING_PORT=6881
+      - TORRENTING_PORT=${QBT_TORRENT_PORT}
     volumes:
       - ${QBT_CONFIG_DIR}:/config
       - ${ARR_TORRENT_DIR}:/data/torrents
@@ -62,7 +62,7 @@ services:
       - PGID=${QBT_GID} # plexapp
       - TZ=${PLEX_TZONE}
       - WEBUI_PORT=3490
-      - TORRENTING_PORT=6882
+      - TORRENTING_PORT=${QBT2_TORRENT_PORT}
     volumes:
       - ${QBT2_CONFIG_DIR}:/config
       - ${ARR_TORRENT_DIR}:/data/torrents
