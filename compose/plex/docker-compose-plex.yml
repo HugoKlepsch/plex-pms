@@ -1,3 +1,5 @@
+name: arrs
+
 services:
   plex2:
     container_name: plex2
