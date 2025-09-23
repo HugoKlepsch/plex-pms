@@ -3,7 +3,7 @@ name: plex
 services:
   # GlueTun - VPN tunnel provider
   gluetun:
-    image: qmcgaw/gluetun
+    image: qmcgaw/gluetun:latest
     container_name: gluetun
     cap_add:
       - NET_ADMIN
@@ -39,7 +39,7 @@ services:
 
   # qBittorrent - Torrent client
   qbittorrent:
-    image: linuxserver/qbittorrent
+    image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
     environment:
       - PUID=${QBT_UID} # transmission
@@ -66,7 +66,7 @@ services:
     
   # qBittorrent2 - Second Torrent client
   qbittorrent2:
-    image: linuxserver/qbittorrent
+    image: linuxserver/qbittorrent:latest
     container_name: qbittorrent2
     environment:
       - PUID=${QBT_UID} # transmission
