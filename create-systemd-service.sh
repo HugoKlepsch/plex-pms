@@ -42,8 +42,6 @@ cat >"${GEN_DIR}/${mount_unit_name}" <<EOF
 Description=Plex SMB Share
 After=network-online.target
 Requires=network-online.target
-Restart=on-failure
-RestartSec=10
 # 60 attempts 10 seconds apart = 10 minutes minimum. Might be longer due to TimeoutSec
 StartLimitBurst=60
 

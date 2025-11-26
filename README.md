@@ -111,6 +111,8 @@ Protect it:
 sudo chmod 600 /etc/samba/creds_plex_data
 ```
 
+Install `smbclient` and `cifs-utils` packages.
+
 ### Systemd mount using CIFS
 
 
