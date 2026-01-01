@@ -49,7 +49,7 @@ StartLimitBurst=60
 What=//${smb_host}/${smb_drive}
 Where=${mount_dir_path}
 Type=cifs
-Options=credentials=/etc/samba/creds_plex_data,uid=${mount_user},gid=${mount_group},file_mode=0775,dir_mode=0775,iocharset=utf8,nofail
+Options=credentials=/etc/samba/creds_plex_data,uid=${mount_user},gid=${mount_group},file_mode=0775,dir_mode=0775,iocharset=utf8,nofail,nobrl
 TimeoutSec=30
 
 [Install]
