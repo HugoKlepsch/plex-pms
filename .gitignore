@@ -3,8 +3,4 @@ plex_data_mnt/
 generated_config/*
 *.sw*
 local_data_mnt/
-/.idea/.gitignore
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/plex-pms.iml
-/.idea/vcs.xml
+/.idea/
