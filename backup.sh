@@ -4,8 +4,8 @@
 # This script creates compressed backups of Plex configuration directories
 
 # Configuration
-SOURCE_DIR="/home/user/plex/local_data_mnt/plex"
-BACKUP_DIR="/home/user/plex/plex_data_mnt/plex2/backups"
+SOURCE_DIR="/home/hugo/plex/local_data_mnt/plex"
+BACKUP_DIR="/home/hugo/plex/plex_data_mnt/plex2/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_NAME="plex_backup_${DATE}"
 LOG_FILE="$BACKUP_DIR/backup.log"
