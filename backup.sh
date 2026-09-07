@@ -103,6 +103,7 @@ tar --exclude='*/Cache/*' \
 	--exclude='*/tmp/*' \
 	--exclude='*/temp/*' \
 	--exclude='*/plex_transcode/*' \
+	--exclude='*/jellyfin_cache/*' \
 	--exclude='*/.*ash_history' \
 	--exclude='*/qbt_config/qBittorrent/ipc-socket' \
 	--exclude='*/*.db-shm' \

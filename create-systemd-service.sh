@@ -108,6 +108,32 @@ ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/plex/do
 WantedBy=multi-user.target
 EOF
 
+jellyfin_unit_name="jellyfin.service"
+echo "Creating jellyfin systemd service... ${jellyfin_unit_name}"
+# Create systemd service file
+cat >"${GEN_DIR}/${jellyfin_unit_name}" <<EOF
+[Unit]
+Description=Run jellyfin in docker compose
+After=${mount_unit_name} docker.service network-online.target
+Requires=${mount_unit_name} docker.service network-online.target
+
+[Service]
+RestartSec=10
+Restart=always
+User=root
+Group=docker
+WorkingDirectory=$(pwd)
+# Shutdown container (if running) when unit is started
+ExecStartPre=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/jellyfin/docker-compose-jellyfin.yml down"
+# Start container when unit is started
+ExecStart=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/jellyfin/docker-compose-jellyfin.yml up"
+# Stop container when unit is stopped
+ExecStop=/bin/bash -c ". ${ENV_FILE}; $(which docker) compose -f compose/jellyfin/docker-compose-jellyfin.yml down"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 backup_service_unit_name="plex-backup.service"
 echo "Creating backup systemd service... ${backup_service_unit_name}"
 # Create systemd service file
@@ -155,6 +181,9 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 	echo "Installing plex systemd service... /etc/systemd/system/${plex_unit_name}"
 	sudo cp "${GEN_DIR}/${plex_unit_name}" "/etc/systemd/system/${plex_unit_name}"
 
+	echo "Installing jellyfin systemd service... /etc/systemd/system/${jellyfin_unit_name}"
+	sudo cp "${GEN_DIR}/${jellyfin_unit_name}" "/etc/systemd/system/${jellyfin_unit_name}"
+
 	echo "Installing plex backup service... /etc/systemd/system/${backup_service_unit_name}"
 	sudo cp "${GEN_DIR}/${backup_service_unit_name}" "/etc/systemd/system/${backup_service_unit_name}"
 
@@ -164,11 +193,12 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 	sudo systemctl daemon-reload
 
 	if [[ "${ENABLE_NOW:-false}" == "true" ]]; then
-		echo "Enabling & starting ${mount_unit_name}, ${arrs_unit_name}, ${plex_unit_name}, ${backup_service_unit_name}, ${backup_timer_unit_name}"
+		echo "Enabling & starting ${mount_unit_name}, ${arrs_unit_name}, ${plex_unit_name}, ${jellyfin_unit_name}, ${backup_service_unit_name}, ${backup_timer_unit_name}"
 		# Start systemd units on startup (and right now)
 		sudo systemctl enable --now "${mount_unit_name}"
 		sudo systemctl enable --now "${arrs_unit_name}"
 		sudo systemctl enable --now "${plex_unit_name}"
+		sudo systemctl enable --now "${jellyfin_unit_name}"
 		# Note: you only need to enable/start the timer, not the service it runs
 		sudo systemctl enable --now "${backup_timer_unit_name}"
 		exit 0

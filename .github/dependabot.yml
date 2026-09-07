@@ -13,3 +13,7 @@ updates:
     directory: "/compose/plex" # Location of package manifests
     schedule:
       interval: "weekly"
+  - package-ecosystem: "docker-compose" # See documentation for possible values
+    directory: "/compose/jellyfin" # Location of package manifests
+    schedule:
+      interval: "weekly"

@@ -7,6 +7,7 @@
 ## Components
 
 * Plex - Media server application, content metadata.
+* Jellyfin - Second media server, same libraries as Plex                 (port 8096)
 * Lidarr - Music collection auto-downloader                              (port 8686)
 * Radarr - Movie collection auto-downloader                              (port 7878)
 * Readarr - Book collection auto-downloader                              (port 8787)
@@ -134,6 +135,26 @@ one of which mounts the samba share. For me, I want to mount it to
   which I configure in the qBittorrent webUI.
 * WebUI is available on port 3489.
 
+## Jellyfin
+
+* Jellyfin is a second media server running against the same media library as
+  Plex (`data/media`), so both can serve the same files.
+* Run as its own `jellyfin` systemd service from
+  `compose/jellyfin/docker-compose-jellyfin.yml`, in the same pattern as the
+  `plex` and `arrs` services.
+* Runs as `plex:plexapp` (`PLEX_UID`/`PLEX_GID`), so it can read the media the
+  \*arrs write.
+* Uses host networking so client auto-discovery and DLNA work. WebUI is on
+  port 8096; it also uses 8920 (HTTPS), 1900 and 7359 (UDP discovery). None of
+  these collide with Plex's 32400.
+* `/dev/dri` is passed through for VAAPI/QSV hardware transcoding. Enable it
+  under Dashboard -> Playback after first start.
+* Config and cache live in `local_data_mnt/plex/jellyfin_config` and
+  `jellyfin_cache`, off the NAS mount, for the same SQLite file-locking reason
+  as Plex. Config is picked up by `backup.sh`; the cache dir is excluded.
+* Media is mounted at `/data/media`, matching Plex, so library paths look the
+  same in both servers.
+
 # Backup & Restore
 
 * The config directories are backed up using the `backup.sh` script. 
@@ -216,4 +237,5 @@ ls -la ~/plex/plex_data_mnt/plex2/backups/
 * Actually route qBittorrent traffic via VPN using GlueTUN [DONE]
 * Fix download client connection issues: port forwarding? [DONE: switched to airVPN w/ port forwarding]
 * Set up overseerr [DONE]
+* Run Jellyfin alongside Plex on the same libraries [TODO]
 * Set up automatic collections using kometa [TODO]
