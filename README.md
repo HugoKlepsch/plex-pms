@@ -144,16 +144,23 @@ one of which mounts the samba share. For me, I want to mount it to
   `plex` and `arrs` services.
 * Runs as `plex:plexapp` (`PLEX_UID`/`PLEX_GID`), so it can read the media the
   \*arrs write.
-* Uses host networking so client auto-discovery and DLNA work. WebUI is on
-  port 8096; it also uses 8920 (HTTPS), 1900 and 7359 (UDP discovery). None of
-  these collide with Plex's 32400.
+* Runs on a bridge network publishing only port 8096, rather than host
+  networking, so the exposed surface is exactly one port. The cost is DLNA
+  (UDP 1900) and client auto-discovery (UDP 7359), neither of which is needed
+  when clients connect by DNS name.
+* Because traffic arrives via the proxy, add the proxy's address under
+  Dashboard -> Networking -> Known proxies, or every client will appear to
+  Jellyfin as the docker bridge gateway.
 * `/dev/dri` is passed through for VAAPI/QSV hardware transcoding. Enable it
   under Dashboard -> Playback after first start.
 * Config and cache live in `local_data_mnt/plex/jellyfin_config` and
   `jellyfin_cache`, off the NAS mount, for the same SQLite file-locking reason
   as Plex. Config is picked up by `backup.sh`; the cache dir is excluded.
 * Media is mounted at `/data/media`, matching Plex, so library paths look the
-  same in both servers.
+  same in both servers. It is mounted **read-only**: Jellyfin only reads it,
+  metadata lives in `/config`, and Bazarr owns subtitles. NFO savers, in-app
+  subtitle downloads, and "save trickplay images next to media" would all
+  need it remounted rw.
 
 # Backup & Restore
 

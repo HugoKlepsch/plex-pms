@@ -10,11 +10,18 @@ services:
       - PGID=${PLEX_GID}
       - UMASK=002
       - TZ=${PLEX_TZONE}
-      # Advertised URL clients are handed for direct connections
+      # Advertised URL clients are handed for direct connections.
+      # Behind a reverse proxy this is the proxied name, e.g.
+      # https://jellyfin.lan
       - JELLYFIN_PublishedServerUrl=${JELLYFIN_PUBLISHED_URL}
-    # Host networking so DLNA & client auto-discovery (UDP 1900 / 7359) work,
-    # same as plex2. Ports used: 8096 (HTTP), 8920 (HTTPS), 1900, 7359.
-    network_mode: host
+    # Bridge networking, so only the port enumerated below is reachable.
+    # This gives up DLNA (UDP 1900) and client auto-discovery (UDP 7359);
+    # neither is needed when clients reach Jellyfin by DNS name through the
+    # reverse proxy.
+    ports:
+      # Set JELLYFIN_BIND_ADDR to 127.0.0.1 if the reverse proxy runs on this
+      # host, or to a specific LAN IP to pin it to a single interface.
+      - "${JELLYFIN_BIND_ADDR:-0.0.0.0}:8096:8096"
     devices:
       # Intel QSV / VAAPI hardware transcoding
       - /dev/dri:/dev/dri
@@ -22,4 +29,8 @@ services:
       - ${JELLYFIN_CONFIG_DIR}:/config
       # Transcodes & images land here; keep it off the NAS mount
       - ${JELLYFIN_CACHE_DIR}:/cache
-      - ${JELLYFIN_DATA_DIR}:/data/media
+      # Read-only: Jellyfin only ever reads media here. Metadata lives in
+      # /config and Bazarr owns subtitles. Turning on NFO savers, in-app
+      # subtitle downloads, or "save trickplay images next to media" would
+      # need this back as rw.
+      - ${JELLYFIN_DATA_DIR}:/data/media:ro
