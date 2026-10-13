@@ -134,6 +134,12 @@ one of which mounts the samba share. For me, I want to mount it to
 * You must configure a proxy. My seedbox provider has a HTTP proxy service, 
   which I configure in the qBittorrent webUI.
 * WebUI is available on port 3489.
+* `qbt-port-watchdog.sh` is run every 2 minutes using 
+  `qbt-port-watchdog.service` and `qbt-port-watchdog.timer`. When gluetun 
+  restarts the VPN, qBittorrent can lose its listening socket on `tun0` and 
+  report no open port. The watchdog restarts a qBittorrent container that is 
+  not listening on the `tun0` address. Check what it did with 
+  `sudo journalctl -u qbt-port-watchdog.service`.
 
 ## Jellyfin
 

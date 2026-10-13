@@ -171,6 +171,38 @@ Persistent=true
 WantedBy=timers.target
 EOF
 
+watchdog_service_unit_name="qbt-port-watchdog.service"
+echo "Creating qBittorrent port watchdog systemd service... ${watchdog_service_unit_name}"
+# Create systemd service file
+cat >"${GEN_DIR}/${watchdog_service_unit_name}" <<EOF
+[Unit]
+Description=Restart qBittorrent if it stopped listening on the VPN interface
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+Group=docker
+WorkingDirectory=$(pwd)
+ExecStart=$(pwd)/qbt-port-watchdog.sh
+EOF
+
+watchdog_timer_unit_name="qbt-port-watchdog.timer"
+echo "Creating qBittorrent port watchdog systemd timer... ${watchdog_timer_unit_name}"
+# Create systemd service file
+cat >"${GEN_DIR}/${watchdog_timer_unit_name}" <<EOF
+[Unit]
+Description=Check qBittorrent listen ports every 2 minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=2min
+
+[Install]
+WantedBy=timers.target
+EOF
+
 if [[ "${INSTALL:-false}" == "true" ]]; then
 	echo "Installing systemd samba mount... /etc/systemd/system/${mount_unit_name}"
 	sudo cp "${GEN_DIR}/${mount_unit_name}" "/etc/systemd/system/${mount_unit_name}"
@@ -190,10 +222,16 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 	echo "Installing plex backup timer... /etc/systemd/system/${backup_timer_unit_name}"
 	sudo cp "${GEN_DIR}/${backup_timer_unit_name}" "/etc/systemd/system/${backup_timer_unit_name}"
 
+	echo "Installing qBittorrent port watchdog service... /etc/systemd/system/${watchdog_service_unit_name}"
+	sudo cp "${GEN_DIR}/${watchdog_service_unit_name}" "/etc/systemd/system/${watchdog_service_unit_name}"
+
+	echo "Installing qBittorrent port watchdog timer... /etc/systemd/system/${watchdog_timer_unit_name}"
+	sudo cp "${GEN_DIR}/${watchdog_timer_unit_name}" "/etc/systemd/system/${watchdog_timer_unit_name}"
+
 	sudo systemctl daemon-reload
 
 	if [[ "${ENABLE_NOW:-false}" == "true" ]]; then
-		echo "Enabling & starting ${mount_unit_name}, ${arrs_unit_name}, ${plex_unit_name}, ${jellyfin_unit_name}, ${backup_service_unit_name}, ${backup_timer_unit_name}"
+		echo "Enabling & starting ${mount_unit_name}, ${arrs_unit_name}, ${plex_unit_name}, ${jellyfin_unit_name}, ${backup_service_unit_name}, ${backup_timer_unit_name}, ${watchdog_timer_unit_name}"
 		# Start systemd units on startup (and right now)
 		sudo systemctl enable --now "${mount_unit_name}"
 		sudo systemctl enable --now "${arrs_unit_name}"
@@ -201,6 +239,7 @@ if [[ "${INSTALL:-false}" == "true" ]]; then
 		sudo systemctl enable --now "${jellyfin_unit_name}"
 		# Note: you only need to enable/start the timer, not the service it runs
 		sudo systemctl enable --now "${backup_timer_unit_name}"
+		sudo systemctl enable --now "${watchdog_timer_unit_name}"
 		exit 0
 	else
 		echo "Run with INSTALL=true ENABLE_NOW=true ./create... to install and start and enable"
