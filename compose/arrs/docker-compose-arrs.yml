@@ -106,19 +106,26 @@ services:
       - "9696:9696"
     restart: unless-stopped
 
-  # Overseerr - Request management
-  overseerr:
-    image: lscr.io/linuxserver/overseerr:latest
-    container_name: overseerr
+  # Seerr - Request management (successor to Overseerr/Jellyseerr)
+  # No PUID/PGID support; run as the plex user via `user:` instead. Config dir must be owned by that UID/GID
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    user: "${PLEX_UID}:${PLEX_GID}"
+    init: true
     environment:
-      - PUID=${PLEX_UID}
-      - PGID=${PLEX_GID}
-      - UMASK=002
+      - LOG_LEVEL=info
       - TZ=${PLEX_TZONE}
     volumes:
-      - ${OVERSEERR_CONFIG_DIR}:/config
+      - ${SEERR_CONFIG_DIR}:/app/config
     ports:
       - "5055:5055"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
     restart: unless-stopped
 
   # Sonarr - TV Shows

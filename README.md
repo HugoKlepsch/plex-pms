@@ -25,8 +25,8 @@ are stored in `.env` files.
 
 Movie example:
 
-1. User makes a request in Overseerr for a movie.
-2. Overseerr tells Radarr to add the movie.
+1. User makes a request in Seerr for a movie.
+2. Seerr tells Radarr to add the movie.
 3. Radarr asks Prowlarr to search for it across configured indexers.
 4. Prowlarr finds it and returns the best match.
 5. Radarr sends it to torrent client (qBittorrent, NZBGet, etc.).
